@@ -6,9 +6,22 @@ using UnityEngine.UIElements;
 public class PlayerController : MonoBehaviour
 {
     private Rigidbody2D playerRb;
+    private int _HP;
     [SerializeField] private float MoveForce;
-    [SerializeField] private int HP;
     [SerializeField] private Vector3 spawnPoint;
+    [SerializeField] public int maxHP = 5;
+    public int HP {get{return _HP;}
+                    set{
+                        if (value > maxHP)
+                        {
+                            Debug.LogWarning("Too much HP");
+                            _HP = maxHP;
+                        }
+                        else
+                        {
+                            _HP = value;
+                        }
+                    } }
 
     void Start()
     {
@@ -16,7 +29,8 @@ public class PlayerController : MonoBehaviour
         playerRb = GetComponent<Rigidbody2D>();
 
         // Set initial values
-        HP = 5;
+        maxHP = 5;
+        HP = maxHP;
         MoveForce = 5;
         spawnPoint = transform.position;
 

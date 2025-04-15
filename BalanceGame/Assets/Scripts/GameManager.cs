@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using TMPro;
+using System.Data.Common;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -13,6 +15,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
     [SerializeField] MiniTaskController taskController;
+    [SerializeField] GameObject DayOverScreen;
+    [SerializeField] DayOverScreenManager dayOverScreenManager;
+    [SerializeField] TMP_Text dayCounterText;
 
     private void Start()
     {
@@ -27,12 +32,16 @@ public class GameManager : MonoBehaviour
         karma = 0;
         dayStage = 0;
 
+        // Make sure the game over and day over screens are off
+        dayOverScreenManager = new DayOverScreenManager(DayOverScreen);
+
     }
 
     private void FixedUpdate()
     {
         Gameloop();
 
+        // Borrar: Prueba para parar timer
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             dayTimer.FinishDay();
@@ -57,6 +66,7 @@ public class GameManager : MonoBehaviour
                         dayStage = 1;
                         break;
                     }
+
                     // If it's in the midday (dayStage = 1)
                     case 1:
                     {
@@ -71,12 +81,20 @@ public class GameManager : MonoBehaviour
                     // If it's in the night (dayStage = 2)
                     case 2:
                     {
-                        //Dusk();
+                        Dusk();
+                        dayStage = 3;
 
-                        if (Input.GetKeyUp(KeyCode.V))
+                        break;
+                    }
+                    // Condition to pass the day
+                    case 3:
+                    {
+                        // Once the day over screen is on, you have to press the key "E" to pass the day
+                        if (Input.GetKey(KeyCode.E))
                         {
                             day ++;
                             dayStage = 0;
+                            dayOverScreenManager.DisableScreen();
                         }
 
                         break;
@@ -101,12 +119,19 @@ public class GameManager : MonoBehaviour
     private void Dawn()
     {
         // Select random duties
+        taskController.GenerateTasks(3);
 
         // Move to spawn and recover health
         playerController.tpHome();
 
-        // Start timer
+        if (playerController.HP < playerController.maxHP)
+        {
+            playerController.HP ++;
+        }
+
+        // Start timer and update UI
         dayTimer.StartTimer();
+        UpdateUI();
 
         // Start playing
     }
@@ -123,14 +148,18 @@ public class GameManager : MonoBehaviour
         // Fade the screen 
         
         // Calculate the results of the day and update karma
-        
-        // Show the results
+        int taskResult = taskController.completedTask;
 
-        // Day +1
-        day ++;
+        // Show the results
+        dayOverScreenManager.ActivateScreen(taskResult, 1, 0);
 
         // Wait the player to press continue
         Debug.Log("Day finished");
+    }
+
+    private void UpdateUI()
+    {
+        dayCounterText.text = "Day "+ day;
     }
 
 }
