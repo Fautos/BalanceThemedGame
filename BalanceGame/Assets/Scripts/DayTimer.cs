@@ -8,7 +8,8 @@ public class DayTimer : MonoBehaviour
 {
     public TMP_Text timer;
     public bool dayOver;
-    [SerializeField] int timePerDay, timeLeft;
+    public int timeLeft;
+    [SerializeField] int timePerDay;
 
     // Start is called before the first frame update
     public void StartTimer()

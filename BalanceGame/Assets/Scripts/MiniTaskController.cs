@@ -8,14 +8,19 @@ using TMPro;
 public class MiniTaskController : MonoBehaviour
 {
     public int pendingTask, completedTask;
+    private int index = 0;
     [SerializeField] List<string> tasks = new List<string>{"CleanYard", 
                                         "CleanBathroom",
                                         "DeliverMail",
                                         "HelpKitchen",
                                         "HelpWorkshop"};
-
+    [SerializeField] List<Color> taskColorsList = new List<Color>{Color.blue,
+                                                            Color.green,
+                                                            Color.yellow};
+    [SerializeField] List<TaskClass> taskClasses = new List<TaskClass>();
+    [SerializeField] List<GameObject> indicatorsList = new List<GameObject>();
+    [SerializeField] List<GameObject> taskTexList = new List<GameObject>();    
     [SerializeField] string tasklist;
-    [SerializeField] TMP_Text ToDoList;
 
     // Start is called before the first frame update
     public void GenerateTasks(int numberOfTasks)
@@ -24,14 +29,21 @@ public class MiniTaskController : MonoBehaviour
         pendingTask = numberOfTasks;
         completedTask = 0;
         tasklist = "";
+        taskClasses.Clear();
+        index = 0;
 
         // Choose "numberOfTasks" task from the list
         List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, 1f)).Take(numberOfTasks).ToList();
 
         foreach (string task in taskChoosen)
         {
-            MiniGameSelection(task);
+            taskClasses.Add(new TaskClass(TaskName: task, TaskText: taskTexList[index], Indicator: indicatorsList[index], IndicatorColor: taskColorsList[index]));
+            index ++;
+
+            // MiniGameSelection(task);
         }
+        
+        index = 0;
 
         
 
@@ -41,49 +53,5 @@ public class MiniTaskController : MonoBehaviour
     void Update()
     {
         
-    }
-
-    // Minigames selection
-    private void MiniGameSelection(string minigame)
-    {
-
-        switch (minigame)
-        {
-            // Clean the yard
-            case "CleanYard":
-            {
-                // Three piles of trash will appear in the yard and you have to pick them
-                tasklist += "Clean yard\n";
-                break;
-            }
-            // Clean the bathroom
-            case "CleanBathroom":
-            {
-                // Ventana emergente en la que tienes que clickar en 3 motas de suciedad. Se activa desde el baño.
-                tasklist += "Clean bathroom\n";
-                break;
-            }
-            // Help in the kitchen
-            case "HelpKitchen":
-            {
-                tasklist += "Help in kitchen\n";
-                break;
-            }
-            // Help in the workshop
-            case "HelpWorkshop":
-            {
-                tasklist += "Help in workshop\n";
-                break;
-            }
-            // Submit letters
-            case "DeliverMail":
-            {
-                tasklist += "Deliver mail\n";
-                break;
-            }
-        }
-
-        ToDoList.text = tasklist;
-
     }
 }

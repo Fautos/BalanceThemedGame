@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
     [SerializeField] MiniTaskController taskController;
-    [SerializeField] GameObject DayOverScreen;
+    [SerializeField] GameObject DayOverScreen, spawnIndicator;
     [SerializeField] DayOverScreenManager dayOverScreenManager;
     [SerializeField] TMP_Text dayCounterText;
 
@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
         dayTimer = GameObject.Find("GameManager").GetComponent<DayTimer>();
         playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         taskController = GameObject.Find("TaskController").GetComponent<MiniTaskController>();
+        spawnIndicator = GameObject.Find("Player/TargetIndicatorSpawnPoint").gameObject;
 
         // Initialize some variables
         day = 1;
@@ -118,6 +119,12 @@ public class GameManager : MonoBehaviour
     // This function set the start of the game
     private void Dawn()
     {
+        // First we turn off the spawn indicator
+        if (spawnIndicator.activeInHierarchy)
+        {
+            spawnIndicator.SetActive(false);
+        } 
+
         // Select random duties
         taskController.GenerateTasks(3);
 
@@ -139,7 +146,14 @@ public class GameManager : MonoBehaviour
     // This function controls the part of the game when you control your character
     private void Midday()
     {
-
+        // If there is less than 30 sec left we indicate the player that they should go to bed
+        if (!spawnIndicator.activeInHierarchy && dayTimer.timeLeft <= 30)
+        {
+            spawnIndicator.SetActive(true);
+        } else if(spawnIndicator.activeInHierarchy && dayTimer.timeLeft > 30)
+        {
+            spawnIndicator.SetActive(false);
+        }
     }
 
     // This function is activated when the day is over and it should performs the final checks before moving to the next day
