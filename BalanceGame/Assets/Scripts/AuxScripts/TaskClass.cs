@@ -6,10 +6,13 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
+// I cant hinherit from monobehaviour because it causes problems
 public class TaskClass //: MonoBehaviour
 {
-    private GameObject taskText, Indicator;
+    private bool taskComplete = false;
     private string taskName;
+    private GameObject taskText, Indicator, taskGO;
+    private ITask taskScript;
     private Color IndicatorColor;
 
     public TaskClass(string TaskName, GameObject TaskText, GameObject Indicator, Color IndicatorColor)
@@ -37,8 +40,9 @@ public class TaskClass //: MonoBehaviour
             // Clean the yard
             case "CleanYard":
             {
-                // Three piles of trash will appear in the yard and you have to pick them
-                
+                // Take the game object
+                taskGO = GameObject.Find("TaskController/CleanYardTask"); 
+
                 // Set the target position
                 target = new Vector3(-12, -10, 0);
 
@@ -90,7 +94,7 @@ public class TaskClass //: MonoBehaviour
             }
         }
 
-        // And paint the dot
+        // Paint the dot
         taskText.transform.Find("Image").gameObject.GetComponent<Image>().color = IndicatorColor;
 
         // At last we set the indicator
@@ -98,10 +102,30 @@ public class TaskClass //: MonoBehaviour
         Indicator.GetComponent<IndicatorScript>().SetTarget(target);
         Indicator.GetComponent<IndicatorScript>().HideCursor(false);
 
+        // And start the task
+        taskScript = taskGO.GetComponent<ITask>();
+        taskScript.StartTask();
+
+    }
+
+    public bool TaskComplete()
+    {
+        // Since we are using Interfaces we only have to look at the method
+        taskComplete = taskScript.CheckCompletion();
+
+        // If the task is complete
+        if (taskComplete)
+        {
+            FinishTask();
+        }
+        
+        return taskComplete;
     }
 
     public void FinishTask()
     {
+        // First we finish the task (in case it was not finish by itself)
+        taskScript.FinishTask();
         // Strike through the text
         taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "<s>" + taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text + "</s>" ;
 
@@ -109,4 +133,17 @@ public class TaskClass //: MonoBehaviour
         Indicator.GetComponent<IndicatorScript>().HideCursor(true);
 
     }
+}
+
+// This interface must be used by all the task game objects
+public interface ITask
+{
+    // In all the game object we must define a method to start the task
+    void StartTask();
+
+    // A method to check if the task is over
+    bool CheckCompletion();
+
+    // And a method to destroy the task
+    void FinishTask();
 }

@@ -25,14 +25,14 @@ public class DayOverScreenManager //: MonoBehaviour
         if (PositiveResultTF != null)
         {
             PositiveResult = PositiveResultTF.gameObject;
-            Debug.Log("Positive encontrado");
+            //Debug.Log("Positive encontrado");
         }
 
         Transform NegativeResultTF = DayOverScreen.transform.Find("TextSpace/ResultSpace/Negative");
         if (NegativeResultTF != null)
         {
             NegativeResult = NegativeResultTF.gameObject;
-            Debug.Log("Negative encontrado");
+            //Debug.Log("Negative encontrado");
         }
         
         // Get the texts spaces
@@ -40,21 +40,21 @@ public class DayOverScreenManager //: MonoBehaviour
         if (TaskTextTF != null)
         {
             TaskText = TaskTextTF.gameObject.GetComponent<TextMeshProUGUI>();
-            Debug.Log("Task text encontrado");
+            //Debug.Log("Task text encontrado");
         }
 
         Transform GATextTF = DayOverScreen.transform.Find("TextSpace/DataSpace/GoodActionsText");
         if (GATextTF != null)
         {
             GoodActionsText = GATextTF.gameObject.GetComponent<TextMeshProUGUI>();
-            Debug.Log("Good actions text encontrado");
+            //Debug.Log("Good actions text encontrado");
         }
 
         Transform BATextTF = DayOverScreen.transform.Find("TextSpace/DataSpace/BadActionsText");
         if (BATextTF != null)
         {
             BadActionsText = BATextTF.gameObject.GetComponent<TextMeshProUGUI>();
-            Debug.Log("Bad actions text encontrado");
+            //Debug.Log("Bad actions text encontrado");
         }
 
         // Lastly we disable the screen so it starts off
@@ -65,7 +65,7 @@ public class DayOverScreenManager //: MonoBehaviour
     }
 
     // This function activates the screen
-    public void ActivateScreen(int TaskCompleted, int GoodActions, int BadActions)
+    public void ActivateScreen(int TaskCompleted, int TaskPerDay, int GoodActions, int BadActions)
     {
         // First we display the screen
         if (!DayOverScreen.activeInHierarchy)
@@ -74,7 +74,7 @@ public class DayOverScreenManager //: MonoBehaviour
         }
 
         // Then we set the texts
-        TaskText.text = "Tasks completed .......... " + TaskCompleted;
+        TaskText.text = "Tasks completed ........ " + TaskCompleted + "/" + TaskPerDay;
         GoodActionsText.text = "Good actions ............. " + GoodActions;
         BadActionsText.text = "Bad actions .............. " + BadActions;
 
@@ -88,7 +88,7 @@ public class DayOverScreenManager //: MonoBehaviour
             NegativeResult.SetActive(false);
         }
 
-        if (BadActions == 0 && TaskCompleted >= 2)
+        if (BadActions == 0 && TaskCompleted >= TaskPerDay-1)
         {
             PositiveResult.SetActive(true);
         }

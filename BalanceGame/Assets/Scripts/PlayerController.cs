@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    public bool inSpawn;
-    public float currentReputation;
+    public bool inSpawn, canMove;
+    public float reputation, aditionalReputation;
     public LayerMask interactableLayer;
     private int _HP;
     private GameObject playerSprites;
@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float MoveForce, interactDistance, attackCD;
     [SerializeField] private Vector3 spawnPoint;
     [SerializeField] public int maxHP = 5;
-    
 
     public int HP {get{return _HP;}
                     set{
@@ -37,23 +36,29 @@ public class PlayerController : MonoBehaviour
         // Set initial values
         maxHP = 5;
         HP = maxHP;
-        currentReputation = 0.0f;
         MoveForce = 5;
         attackCD = 0.5f;
         interactDistance = 1.5f;
         canInteract = true;
+        canMove = true;
         inSpawn = true;
         spawnPoint = transform.position;
+        reputation = 0;
+        aditionalReputation = 0;
 
     }
 
     void FixedUpdate()
     {
-        Move();
-
-        if (Input.GetKey(KeyCode.Space))
+        // If the player "can move" we let them move 
+        if(canMove)
         {
-            Interact();
+            Move();
+
+            if (Input.GetKey(KeyCode.Space))
+            {
+                Interact();
+            }
         }
     }
 
@@ -153,6 +158,17 @@ public class PlayerController : MonoBehaviour
     public void tpHome()
     {
         transform.position = spawnPoint;
+    }
+
+    public void UpdateReputation(int taskCompleted, int taskPerDay, int goodActions, int badActions)
+    {
+        // To compute the reputation balance at the end of the day we follow the next rules
+        reputation += 2*taskCompleted - (taskPerDay-taskCompleted);
+        reputation += goodActions - 2*badActions;
+
+        // Tha additional reputation is only based on your actions, to show more respect to other people without affecting your final score
+        aditionalReputation += -badActions + 0.5f*goodActions;
+
     }
     
     #endregion

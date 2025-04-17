@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
 {
 
     [SerializeField] bool gameOver = false;
-    [SerializeField] int day, maxDays, dayStage;
+    [SerializeField] int day, maxDays, dayStage, taskPerDay, goodActions, badActions;
     [SerializeField] float karma;
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
         maxDays = 5;
         karma = 0;
         dayStage = 0;
+        taskPerDay = 1;
+        ResetDayVariables();
 
         // Make sure the game over and day over screens are off
         dayOverScreenManager = new DayOverScreenManager(DayOverScreen);
@@ -91,10 +93,11 @@ public class GameManager : MonoBehaviour
                     case 3:
                     {
                         // Once the day over screen is on, you have to press the key "E" to pass the day
-                        if (Input.GetKey(KeyCode.E))
+                        if (Input.GetKey(KeyCode.Space))
                         {
                             day ++;
                             dayStage = 0;
+                            ResetDayVariables();
                             dayOverScreenManager.DisableScreen();
                         }
 
@@ -126,7 +129,7 @@ public class GameManager : MonoBehaviour
         } 
 
         // Select random duties
-        taskController.GenerateTasks(3);
+        taskController.GenerateTasks(taskPerDay);
 
         // Move to spawn and recover health
         playerController.tpHome();
@@ -141,11 +144,21 @@ public class GameManager : MonoBehaviour
         UpdateUI();
 
         // Start playing
+        playerController.canMove = true;
     }
 
     // This function controls the part of the game when you control your character
     private void Midday()
     {
+        // During the midday we should check if any of the tasks is completed and the actions of the player
+        taskController.CheckTaskCompleted();
+
+        // If all the tasks are completed the player can go rest
+        if (taskController.completedTask == taskPerDay)
+        {
+            Debug.Log("All tasks of the day are completed");
+        }
+
         // If there is less than 30 sec left we indicate the player that they should go to bed
         if (!spawnIndicator.activeInHierarchy && dayTimer.timeLeft <= 30)
         {
@@ -159,13 +172,28 @@ public class GameManager : MonoBehaviour
     // This function is activated when the day is over and it should performs the final checks before moving to the next day
     private void Dusk()
     {
-        // Fade the screen 
-        
+        // Finish all the task in progress
+        taskController.FinishDayTasks();
+
+        // Dont allow the player to move
+        playerController.canMove = false;
+
+        // If the player ends the day in their room that's consider a good action, else it will be a bad action
+        if (playerController.inSpawn)
+        {
+            goodActions ++;
+        }
+        else
+        {
+            badActions ++;
+        }
+
         // Calculate the results of the day and update karma
         int taskResult = taskController.completedTask;
 
-        // Show the results
-        dayOverScreenManager.ActivateScreen(taskResult, 1, 0);
+        // Show the results and add the reputation to the player
+        dayOverScreenManager.ActivateScreen(taskResult, taskPerDay, goodActions, badActions);
+        playerController.UpdateReputation(taskResult, taskPerDay, goodActions, badActions);
 
         // Wait the player to press continue
         Debug.Log("Day finished");
@@ -174,6 +202,12 @@ public class GameManager : MonoBehaviour
     private void UpdateUI()
     {
         dayCounterText.text = "Day "+ day;
+    }
+
+    private void ResetDayVariables()
+    {
+        goodActions = 0;
+        badActions = 0;
     }
 
 }

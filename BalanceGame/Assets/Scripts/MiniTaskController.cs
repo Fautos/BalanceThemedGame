@@ -7,7 +7,7 @@ using TMPro;
 
 public class MiniTaskController : MonoBehaviour
 {
-    public int pendingTask, completedTask;
+    public int completedTask;
     private int index = 0;
     [SerializeField] List<string> tasks = new List<string>{"CleanYard", 
                                         "CleanBathroom",
@@ -20,38 +20,60 @@ public class MiniTaskController : MonoBehaviour
     [SerializeField] List<TaskClass> taskClasses = new List<TaskClass>();
     [SerializeField] List<GameObject> indicatorsList = new List<GameObject>();
     [SerializeField] List<GameObject> taskTexList = new List<GameObject>();    
-    [SerializeField] string tasklist;
 
-    // Start is called before the first frame update
+    // Function to generate the tasks
     public void GenerateTasks(int numberOfTasks)
     {
         // Reset variables
-        pendingTask = numberOfTasks;
         completedTask = 0;
-        tasklist = "";
         taskClasses.Clear();
         index = 0;
 
         // Choose "numberOfTasks" task from the list
-        List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, 1f)).Take(numberOfTasks).ToList();
+        //List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, 1f)).Take(numberOfTasks).ToList();
+        List<string> taskChoosen = new List<string>{"CleanYard"};
+
 
         foreach (string task in taskChoosen)
         {
             taskClasses.Add(new TaskClass(TaskName: task, TaskText: taskTexList[index], Indicator: indicatorsList[index], IndicatorColor: taskColorsList[index]));
             index ++;
-
-            // MiniGameSelection(task);
         }
         
-        index = 0;
-
-        
+        index = 0;      
 
     }
 
-    // Update is called once per frame
-    void Update()
+    // Function to check if the task are completed
+    public void CheckTaskCompleted()
     {
-        
+        // We go through all the tasks and check if they are finished
+        if (taskClasses.Count != 0)
+        {
+            // We run through the loop in reverse to avoid problems with the index in case we remove something
+            for(int i = taskClasses.Count - 1; i >= 0; i--)
+            {
+                // If any task is complete it will be finished and removed from the list
+                if(taskClasses[i].TaskComplete())
+                {
+                    taskClasses.RemoveAt(i);
+                    completedTask++;
+                }
+            }
+        }    
+    }
+
+    // Function to finish all the remaining tasks
+    public void FinishDayTasks()
+    {
+        if (taskClasses.Count != 0)
+        {
+            // We run through the loop in reverse to avoid problems with the index in case we remove something
+            for(int i = taskClasses.Count - 1; i >= 0; i--)
+            {
+                taskClasses[i].FinishTask();
+                taskClasses.RemoveAt(i);
+            }
+        }
     }
 }
