@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] bool gameOver = false;
     [SerializeField] int day, maxDays, dayStage, taskPerDay, goodActions, badActions;
-    [SerializeField] float karma;
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
     [SerializeField] MiniTaskController taskController;
@@ -30,7 +29,6 @@ public class GameManager : MonoBehaviour
         // Initialize some variables
         day = 1;
         maxDays = 5;
-        karma = 0;
         dayStage = 0;
         taskPerDay = 1;
         ResetDayVariables();
@@ -188,10 +186,8 @@ public class GameManager : MonoBehaviour
             badActions ++;
         }
 
-        // Calculate the results of the day and update karma
-        int taskResult = taskController.completedTask;
-
         // Show the results and add the reputation to the player
+        int taskResult = taskController.completedTask;
         dayOverScreenManager.ActivateScreen(taskResult, taskPerDay, goodActions, badActions);
         playerController.UpdateReputation(taskResult, taskPerDay, goodActions, badActions);
 

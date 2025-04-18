@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    public bool inSpawn, canMove;
+    public bool inSpawn, canMove, isInvisible;
     public float reputation, aditionalReputation;
     public LayerMask interactableLayer;
     private int _HP;
@@ -38,10 +39,11 @@ public class PlayerController : MonoBehaviour
         HP = maxHP;
         MoveForce = 5;
         attackCD = 0.5f;
-        interactDistance = 1.5f;
+        interactDistance = 0.3f;
         canInteract = true;
         canMove = true;
         inSpawn = true;
+        isInvisible = false;
         spawnPoint = transform.position;
         reputation = 0;
         aditionalReputation = 0;
@@ -85,28 +87,20 @@ public class PlayerController : MonoBehaviour
         {
             // First we launch a Raycast to check if there is something iteractable
             Vector2 direction = playerSprites.transform.up;
-            Vector2 origin = transform.position;
+            Vector2 origin = transform.position + new Vector3(0, 0.25f, 0);
 
             RaycastHit2D hit = Physics2D.Raycast(origin, direction, interactDistance, interactableLayer);
             
             // For debugging
-            Debug.DrawRay(origin, direction * interactDistance, Color.green, 0.5f);
+            Debug.DrawRay(origin, direction * interactDistance, Color.green, 0.3f);
 
+            // If the player hits 
             if (hit.collider != null)
             {
                 // Hay un objeto en el camino, tratamos de interactuar
                 Debug.Log("Interacting with: " + hit.collider.name);
 
-                /*/ Intenta obtener un componente de tipo Interactable (puedes definir tu propio script)
-                var interactable = hit.collider.GetComponent<IInteractable>();
-                if (interactable != null)
-                {
-                    interactable.Interact(); // Llama a la interacción
-                    return;
-                }
-
-                // Si quieres basarte en tags:
-                // if (hit.collider.CompareTag("Interactuable")) { ... }*/
+                hit.transform.gameObject.GetComponentInParent<IWindow>().StartMiniGame();
             }
             else
             {
@@ -145,6 +139,14 @@ public class PlayerController : MonoBehaviour
         }        
     }
 
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Respawn"))
+        {
+            inSpawn = true;
+        }        
+    }
+
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.CompareTag("Respawn"))
@@ -169,6 +171,22 @@ public class PlayerController : MonoBehaviour
         // Tha additional reputation is only based on your actions, to show more respect to other people without affecting your final score
         aditionalReputation += -badActions + 0.5f*goodActions;
 
+    }
+
+    // Function to hide the player
+    public void HidePlayer(bool hide)
+    {
+        // You hide the player when they interact with something
+        if (hide)
+        {
+            isInvisible = true;
+            canMove = false;
+        }
+        else
+        {
+            isInvisible = false;
+            canMove = true;
+        }
     }
     
     #endregion

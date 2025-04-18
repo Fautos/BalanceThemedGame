@@ -53,20 +53,24 @@ public class TaskClass //: MonoBehaviour
             // Clean the bathroom
             case "CleanBathroom":
             {
-                // Ventana emergente en la que tienes que clickar en 3 motas de suciedad. Se activa desde el baño.
+                // Take the game object
+                taskGO = GameObject.Find("TaskController/CleanBathroomTask");
                 
                 // Set the target position
-                target = new Vector3(12, 16, 0);
+                target = new Vector3(3.5f, 16, 0);
 
                 // Add the task to the list
-                taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Tidy the bathroom\n";
+                taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Unclog the toilet\n";
                 break;
             }
             // Help in the kitchen
             case "HelpKitchen":
             {
+                // Take the game object
+                taskGO = GameObject.Find("TaskController/HelpKitchenTask");
+
                 // Set the target position
-                target = new Vector3(4, -18, 0);
+                target = new Vector3(12, -16, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Assist in kitchen\n";
@@ -146,4 +150,11 @@ public interface ITask
 
     // And a method to destroy the task
     void FinishTask();
+}
+
+// This interface will also be used in minigames which requires aditional screens
+public interface IWindow
+{
+    // There must be a method to launch the minigame
+    void StartMiniGame();
 }
