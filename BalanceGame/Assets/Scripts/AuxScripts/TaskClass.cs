@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class TaskClass //: MonoBehaviour
 {
     private bool taskComplete = false;
-    private string taskName;
+    public string taskName;
     private GameObject taskText, Indicator, taskGO;
     private ITask taskScript;
     private Color IndicatorColor;
@@ -79,8 +79,11 @@ public class TaskClass //: MonoBehaviour
             // Help in the workshop
             case "HelpWorkshop":
             {
+                // Take the game object
+                taskGO = GameObject.Find("TaskController/HelpWorkshopTask");
+
                 // Set the target position
-                target = new Vector3(-28, -18, 0);
+                target = new Vector3(-37.5f, -10, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Assist in workshop\n";

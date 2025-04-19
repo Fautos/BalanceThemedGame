@@ -142,7 +142,7 @@ public class GameManager : MonoBehaviour
         UpdateUI();
 
         // Start playing
-        playerController.canMove = true;
+        playerController.HidePlayer(false);
     }
 
     // This function controls the part of the game when you control your character
@@ -154,7 +154,7 @@ public class GameManager : MonoBehaviour
         // If all the tasks are completed the player can go rest
         if (taskController.completedTask == taskPerDay)
         {
-            Debug.Log("All tasks of the day are completed");
+            //Debug.Log("All tasks of the day are completed");
         }
 
         // If there is less than 30 sec left we indicate the player that they should go to bed
@@ -174,7 +174,7 @@ public class GameManager : MonoBehaviour
         taskController.FinishDayTasks();
 
         // Dont allow the player to move
-        playerController.canMove = false;
+        playerController.HidePlayer(true);
 
         // If the player ends the day in their room that's consider a good action, else it will be a bad action
         if (playerController.inSpawn)
@@ -197,7 +197,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateUI()
     {
-        dayCounterText.text = "Day "+ day;
+        dayCounterText.text = "Day "+ day +"/5";
     }
 
     private void ResetDayVariables()

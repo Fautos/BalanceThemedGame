@@ -48,7 +48,6 @@ public abstract class WindowTaskClass : MonoBehaviour, ITask, IWindow
         }
         else if (gameCompleted)
         {
-            ExitMiniGame();
             FinishTask();
         }
 

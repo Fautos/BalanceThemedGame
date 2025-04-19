@@ -31,7 +31,7 @@ public class MiniTaskController : MonoBehaviour
 
         // Choose "numberOfTasks" task from the list
         //List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, 1f)).Take(numberOfTasks).ToList();
-        List<string> taskChoosen = new List<string>{"HelpKitchen"};
+        List<string> taskChoosen = new List<string>{"HelpWorkshop"}; //CleanYard CleanBathroom HelpKitchen
 
 
         foreach (string task in taskChoosen)
@@ -56,6 +56,7 @@ public class MiniTaskController : MonoBehaviour
                 // If any task is complete it will be finished and removed from the list
                 if(taskClasses[i].TaskComplete())
                 {
+                    Debug.Log("Task " + taskClasses[i].taskName + " completed.");
                     taskClasses.RemoveAt(i);
                     completedTask++;
                 }
@@ -71,6 +72,7 @@ public class MiniTaskController : MonoBehaviour
             // We run through the loop in reverse to avoid problems with the index in case we remove something
             for(int i = taskClasses.Count - 1; i >= 0; i--)
             {
+                Debug.Log("Task " + taskClasses[i].taskName + " not completed, it will be finished.");
                 taskClasses[i].FinishTask();
                 taskClasses.RemoveAt(i);
             }

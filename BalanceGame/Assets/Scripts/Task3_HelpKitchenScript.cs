@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using UnityEngine.UI;
 using TMPro;
 
 public class Task3_HelpKitchenScript : WindowTaskClass
@@ -62,41 +61,8 @@ public class Task3_HelpKitchenScript : WindowTaskClass
             case 2:
             {
                 // We wait till the player finish their recipe
-                // If the player press C and the cheese was an ingredient
-                if (Input.GetKey(KeyCode.C) && ingredientsList.Contains(0))
-                {
-                    // We show the cheese layer
-                    foodLayers[0].SetActive(true);
-                    // Add the trigger
-                    keysPressed ++;
-                    // And remove the button
-                    buttonsGO[0].SetActive(false);
-                    ingredientsList.RemoveAll(item => item == 0);  
-                }
-                if (Input.GetKey(KeyCode.T) && ingredientsList.Contains(1))
-                {
-                    // We show the cheese layer
-                    foodLayers[1].SetActive(true);
-                    // Add the trigger
-                    keysPressed ++;
-                    // And remove the button
-                    buttonsGO[1].SetActive(false);
-                    ingredientsList.RemoveAll(item => item == 1);  
-                }
-                if (Input.GetKey(KeyCode.P) && ingredientsList.Contains(2))
-                {
-                    // We show the cheese layer
-                    foodLayers[2].SetActive(true);
-                    // Add the trigger
-                    keysPressed ++;
-                    // And remove the button
-                    buttonsGO[2].SetActive(false);
-                    ingredientsList.RemoveAll(item => item == 2);  
-                }
-
                 if (keysPressed >= numIngredients)
                 {
-                    // Pizza is finished
                     Score++;
                     UpdatePizzaCount();
 
@@ -110,6 +76,38 @@ public class Task3_HelpKitchenScript : WindowTaskClass
                     {
                         gameStage = 1;
                     }
+                }
+
+                // If the player press C and the cheese was an ingredient
+                if (Input.GetKeyDown(KeyCode.C) && ingredientsList.Contains(0))
+                {
+                    // We show the cheese layer
+                    foodLayers[0].SetActive(true);
+                    // Add the trigger
+                    keysPressed ++;
+                    // And remove the button
+                    buttonsGO[0].SetActive(false);
+                    ingredientsList.RemoveAll(item => item == 0);  
+                }
+                if (Input.GetKeyDown(KeyCode.T) && ingredientsList.Contains(1))
+                {
+                    // We show the cheese layer
+                    foodLayers[1].SetActive(true);
+                    // Add the trigger
+                    keysPressed ++;
+                    // And remove the button
+                    buttonsGO[1].SetActive(false);
+                    ingredientsList.RemoveAll(item => item == 1);  
+                }
+                if (Input.GetKeyDown(KeyCode.P) && ingredientsList.Contains(2))
+                {
+                    // We show the cheese layer
+                    foodLayers[2].SetActive(true);
+                    // Add the trigger
+                    keysPressed ++;
+                    // And remove the button
+                    buttonsGO[2].SetActive(false);
+                    ingredientsList.RemoveAll(item => item == 2);  
                 }
 
                 break;
