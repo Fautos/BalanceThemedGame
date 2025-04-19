@@ -70,7 +70,7 @@ public class TaskClass //: MonoBehaviour
                 taskGO = GameObject.Find("TaskController/HelpKitchenTask");
 
                 // Set the target position
-                target = new Vector3(12, -16, 0);
+                target = new Vector3(12, -15, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Assist in kitchen\n";
@@ -83,7 +83,7 @@ public class TaskClass //: MonoBehaviour
                 taskGO = GameObject.Find("TaskController/HelpWorkshopTask");
 
                 // Set the target position
-                target = new Vector3(-37.5f, -10, 0);
+                target = new Vector3(-38.5f, -18, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Assist in workshop\n";
