@@ -6,17 +6,17 @@ using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    public bool inSpawn, canMove, isInvisible;
+    public bool inSpawn, canMove, canReceiveDamage, isInvisible;
     public float reputation, aditionalReputation;
     public LayerMask interactableLayer;
     private int _HP;
-    private GameObject playerSprites;
+    private GameObject playerSprites, arm;
     [SerializeField] private bool canInteract;
     [SerializeField] private float MoveForce, interactDistance, attackCD;
     [SerializeField] private Vector3 spawnPoint;
     [SerializeField] public int maxHP = 5;
 
-    public int HP {get{return _HP;}
+    [SerializeField] public int HP {get{return _HP;}
                     set{
                         if (value > maxHP)
                         {
@@ -33,15 +33,17 @@ public class PlayerController : MonoBehaviour
     {
         // Get components
         playerSprites = transform.Find("Sprites").gameObject;
+        arm = playerSprites.transform.Find("Arm").gameObject;
 
         // Set initial values
         maxHP = 5;
         HP = maxHP;
         MoveForce = 5;
-        attackCD = 0.5f;
+        attackCD = 1.0f;
         interactDistance = 0.3f;
         canInteract = true;
         canMove = true;
+        canReceiveDamage = true;
         inSpawn = true;
         isInvisible = false;
         spawnPoint = transform.position;
@@ -115,9 +117,9 @@ public class PlayerController : MonoBehaviour
         // If the player is attacking they cannot interact with anything until the attack is finished
         canInteract = false;
 
-        if (!playerSprites.transform.Find("Arm").gameObject.activeInHierarchy)
+        if (!arm.activeInHierarchy)
         {
-            playerSprites.transform.Find("Arm").gameObject.SetActive(true);
+            arm.SetActive(true);
             StartCoroutine(AttackCdCoroutine());
         }
         
@@ -125,10 +127,14 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator AttackCdCoroutine()
     {
-        yield return new WaitForSeconds(attackCD);
-        // When the attack is finished the player can interact again
+        float activeTime = 0.5f; // Time the arm stays active
+        float remainingCooldown = Mathf.Max(attackCD - activeTime, 0f);
+
+        yield return new WaitForSeconds(activeTime);
+        arm.SetActive(false);
+        yield return new WaitForSeconds(remainingCooldown);
+        
         canInteract = true;
-        playerSprites.transform.Find("Arm").gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -188,7 +194,48 @@ public class PlayerController : MonoBehaviour
             canMove = true;
         }
     }
-    
+
+    public void TakeDamage(int damage)
+    {
+        if(canReceiveDamage)
+        {
+            HP -= damage;
+            FlashOnDamage();
+        }
+
+        if (HP <= 0f)
+        {
+            Debug.Log("Game over, player is dead.");
+        }
+    }
+
+    // Flashing when damage received    
+    public void FlashOnDamage()
+    {
+        StartCoroutine(FlashCoroutine());
+    }
+
+    private IEnumerator FlashCoroutine()
+    {
+        SpriteRenderer[] sprites = GetComponentsInChildren<SpriteRenderer>();
+
+        // Invulneravility frames
+        canReceiveDamage = false;
+
+        // Flashing effect
+        for (int i = 0; i < 3; i++)
+        {
+            foreach (var sprite in sprites)
+                sprite.enabled = false;
+            yield return new WaitForSeconds(0.1f);
+
+            foreach (var sprite in sprites)
+                sprite.enabled = true;
+            yield return new WaitForSeconds(0.1f);
+        }
+        canReceiveDamage = true;
+    }
+
     #endregion
 
 }
