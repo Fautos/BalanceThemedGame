@@ -83,7 +83,7 @@ public class TaskClass //: MonoBehaviour
                 taskGO = GameObject.Find("TaskController/HelpWorkshopTask");
 
                 // Set the target position
-                target = new Vector3(-38.5f, -18, 0);
+                target = new Vector3(-32.5f, -17, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Assist in workshop\n";
@@ -92,8 +92,11 @@ public class TaskClass //: MonoBehaviour
             // Submit letters
             case "DeliverMail":
             {
+                // Take the game object
+                taskGO = GameObject.Find("TaskController/DeliverMailTask");
+
                 // Set the target position
-                target = new Vector3(-25, 13, 0);
+                target = new Vector3(-31.5f, 13, 0);
 
                 // Add the task to the list
                 taskText.transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Deliver the mail\n";

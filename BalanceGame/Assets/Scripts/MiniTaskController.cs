@@ -30,9 +30,8 @@ public class MiniTaskController : MonoBehaviour
         index = 0;
 
         // Choose "numberOfTasks" task from the list
-        //List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, 1f)).Take(numberOfTasks).ToList();
-        List<string> taskChoosen = new List<string>{"HelpKitchen"}; //CleanYard CleanBathroom HelpWorkshop
-
+        List<string> taskChoosen = tasks.OrderBy(x => Random.Range(0f, tasks.Count)).Take(numberOfTasks).ToList();
+        //List<string> taskChoosen = new List<string>{"DeliverMail"}; //CleanYard CleanBathroom HelpWorkshop HelpKitchen
 
         foreach (string task in taskChoosen)
         {

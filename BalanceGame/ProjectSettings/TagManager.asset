@@ -16,8 +16,8 @@ TagManager:
   - Interaction
   - Obstacle
   - Enemy
-  - 
-  - 
+  - PrisionCell
+  - Receiver
   - 
   - 
   - 

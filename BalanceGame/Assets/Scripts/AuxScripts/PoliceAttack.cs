@@ -2,66 +2,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PolicemanArm : MonoBehaviour
+public class PoliceAttack : MonoBehaviour
 {
-    public float extendDistance = 1.5f;
-    public float extendSpeed = 8f;
-    public float retractSpeed = 6f;
-    public LayerMask targetLayer;
-    public bool isExtending = false;
+    [SerializeField] public int policeThresholdMin = -5; 
+    [SerializeField] public int policeThresholdMax = 5;
 
-    private Vector3 initialLocalPosition;
-    private Coroutine currentCoroutine;
-
-    private void Start()
+    public void SetThresholds(int minThreshold, int maxThreshold)
     {
-        initialLocalPosition = transform.localPosition;
+        this.policeThresholdMin = minThreshold;
+        this.policeThresholdMax = maxThreshold;
     }
 
-    public void ActivateArm()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (currentCoroutine == null)
+        //Debug.Log("The police officer catch someone.");
+        PoliceController police = GetComponentInParent<PoliceController>();
+
+        // If the police officer catch the player
+        if (collision.CompareTag("Player"))
         {
-            currentCoroutine = StartCoroutine(ExtendAndRetract());
+            PlayerController player = collision.GetComponent<PlayerController>();
+
+            // Depending on their reputation different things may happend
+            if (player != null)
+            {
+                float playerReputation = player.reputation + player.aditionalReputation;
+                
+                // If their reputation is too low they will be send back to their cell and the day will be over
+                if (playerReputation < policeThresholdMin)
+                {
+                    player.tpHome();
+                    // Day end
+                    GameObject.Find("GameManager").GetComponent<DayTimer>().FinishDay();
+                } 
+                // If it's low but not too low the player will only be send back to their prision
+                else if(playerReputation >= policeThresholdMin && playerReputation < policeThresholdMax)
+                {
+                    player.tpHome();
+                    GameObject.Find("GameManager").GetComponent<GameManager>().badActions ++;
+                }
+                // Else nothing happend (in fact if the player reputation is high enough the police should not chase the player)
+                                
+            }
         }
-    }
-
-    private IEnumerator ExtendAndRetract()
-    {
-        isExtending = true;
-        Vector3 targetLocalPosition = initialLocalPosition + Vector3.right * extendDistance;
-
-        while (Vector3.Distance(transform.localPosition, targetLocalPosition) > 0.05f)
+        // If the police officer catch an enemy it will be send back to their prision
+        else if (collision.CompareTag("Enemy"))
         {
-            transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetLocalPosition, extendSpeed * Time.deltaTime);
-            DetectCollision();
-            yield return null;
+            EnemyController enemy = collision.GetComponent<EnemyController>();
+
+            if (enemy != null)
+            {
+                enemy.SendToCell();
+            }
         }
 
-        isExtending = false;
-
-        // Pequeña pausa si quieres
-        yield return new WaitForSeconds(0.1f);
-
-        while (Vector3.Distance(transform.localPosition, initialLocalPosition) > 0.05f)
+        if (police != null)
         {
-            transform.localPosition = Vector3.MoveTowards(transform.localPosition, initialLocalPosition, retractSpeed * Time.deltaTime);
-            yield return null;
-        }
-
-        transform.localPosition = initialLocalPosition;
-        currentCoroutine = null;
-    }
-
-    private void DetectCollision()
-    {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, 0.5f, targetLayer);
-
-        if (hit.collider != null)
-        {
-            Debug.Log("¡Brazo del policía atrapó a alguien!");
-            // Aquí podrías llamar a un método para castigar directamente si quieres
-            // También puedes mandar mensaje al PoliceController si quieres coordinar mejor
+            police.OnTargetCaptured(collision.transform);
         }
     }
 }

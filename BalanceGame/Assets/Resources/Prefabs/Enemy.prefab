@@ -112,7 +112,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 50
+  m_Mass: 100
   m_LinearDrag: 2
   m_AngularDrag: 0.05
   m_GravityScale: 0
@@ -142,21 +142,22 @@ MonoBehaviour:
   isActive: 1
   health: 5
   currentHealth: 0
-  reputationThreshold: 50
+  reputationThreshold: -3
   respawnTime: 10
-  speed: 10000
+  speed: 25000
   nextWaypointDistance: 1.5
-  viewRadius: 5
+  viewRadius: 7.5
   viewAngle: 90
+  waypointDelay: 5
   enemyGFX: {fileID: 0}
   playerLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 256
-  attackCooldown: 1
-  attackRange: 2.5
+    m_Bits: 0
+  attackCooldown: 2
+  attackRange: 1.5
 --- !u!1 &2085147047293298330
 GameObject:
   m_ObjectHideFlags: 0
@@ -411,7 +412,7 @@ Transform:
   m_GameObject: {fileID: 4237282068717593707}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.79, y: -0.44, z: 0}
+  m_LocalPosition: {x: -16.5, y: -15, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -442,7 +443,7 @@ Transform:
   m_GameObject: {fileID: 5600544772836233492}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.79, y: 4.06, z: 0}
+  m_LocalPosition: {x: -16.5, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -473,7 +474,7 @@ Transform:
   m_GameObject: {fileID: 6513914538792434548}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.06, z: 0}
+  m_LocalPosition: {x: 3, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

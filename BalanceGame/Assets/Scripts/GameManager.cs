@@ -8,13 +8,13 @@ using System.Data.Common;
 
 public class GameManager : MonoBehaviour
 {
-
-    [SerializeField] bool gameOver = false;
-    [SerializeField] int day, maxDays, dayStage, taskPerDay, goodActions, badActions;
+    public int goodActions, badActions;
+    [SerializeField] public bool gameOver = false;
+    [SerializeField] int day, maxDays, dayStage, taskPerDay;
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
     [SerializeField] MiniTaskController taskController;
-    [SerializeField] GameObject DayOverScreen, spawnIndicator;
+    [SerializeField] GameObject DayOverScreen, spawnIndicator, catPrefab;
     [SerializeField] DayOverScreenManager dayOverScreenManager;
     [SerializeField] TMP_Text dayCounterText;
 
@@ -25,12 +25,13 @@ public class GameManager : MonoBehaviour
         playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         taskController = GameObject.Find("TaskController").GetComponent<MiniTaskController>();
         spawnIndicator = GameObject.Find("Player/TargetIndicatorSpawnPoint").gameObject;
+        catPrefab = Resources.Load<GameObject>("Prefabs/Cat");
 
         // Initialize some variables
         day = 1;
         maxDays = 5;
         dayStage = 0;
-        taskPerDay = 1;
+        taskPerDay = 3;
         ResetDayVariables();
 
         // Make sure the game over and day over screens are off
@@ -55,7 +56,7 @@ public class GameManager : MonoBehaviour
         if (!gameOver)
         {
             // First we check the day, if it's the last day the game is over
-            if (day < maxDays)
+            if (day <= maxDays)
             {
                 // We control the game with this cycle
                 switch (dayStage)
@@ -90,8 +91,8 @@ public class GameManager : MonoBehaviour
                     // Condition to pass the day
                     case 3:
                     {
-                        // Once the day over screen is on, you have to press the key "E" to pass the day
-                        if (Input.GetKey(KeyCode.Space))
+                        // Once the day over screen is on, you have to press the key "Enter" to pass the day
+                        if (Input.GetKey(KeyCode.Return))
                         {
                             day ++;
                             dayStage = 0;
@@ -112,7 +113,7 @@ public class GameManager : MonoBehaviour
         else
         {
             // If the game is over we show the final score
-            Debug.Log("GameOver");
+            GameOver();
         }
 
     }
@@ -134,12 +135,16 @@ public class GameManager : MonoBehaviour
 
         if (playerController.HP < playerController.maxHP)
         {
-            playerController.HP ++;
+            playerController.HP = playerController.maxHP;
+            playerController.UpdateUI();
         }
 
         // Start timer and update UI
         dayTimer.StartTimer();
         UpdateUI();
+
+        // And enable the cat
+        CatSpawn();
 
         // Start playing
         playerController.HidePlayer(false);
@@ -195,6 +200,49 @@ public class GameManager : MonoBehaviour
         Debug.Log("Day finished");
     }
 
+    public void GameOver()
+    {   
+        string gameOverText = "";
+        // If the agem is over we launch the game over screen with the results
+        Debug.Log("GameOver");
+        gameOver = true;
+        dayTimer.FinishDay();
+
+        // Dont allow the player to move
+        playerController.HidePlayer(true);
+
+        // The end game text
+        if (playerController.HP <= 0)
+        {
+            gameOverText = "Player died";
+        }
+        else
+        {
+            if (playerController.reputation < -5)
+            {
+                gameOverText = "Player will die in prison, but he is the king of prison";
+            }
+            else if (playerController.reputation >= -5 && playerController.reputation < 5)
+            {
+                gameOverText = "Player will die in prison";
+            }
+            else if (playerController.reputation > 5)
+            {
+                gameOverText = "Player will die in prison";
+            }
+        }
+        Debug.Log(gameOverText);
+        
+    }
+
+    void CatSpawn()
+    {
+        if(Random.Range(0, 2) > 0)
+        {
+            Instantiate(catPrefab, transform.position, Quaternion.identity);
+        }
+    }
+
     private void UpdateUI()
     {
         dayCounterText.text = "Day "+ day +"/5";
@@ -206,4 +254,12 @@ public class GameManager : MonoBehaviour
         badActions = 0;
     }
 
+}
+
+public interface IGeneralCharacter
+{
+    // Function to stop the NPC
+    void StopNPC(bool stop);
+    // Function to reset the NPC
+    void ResetNPC();
 }

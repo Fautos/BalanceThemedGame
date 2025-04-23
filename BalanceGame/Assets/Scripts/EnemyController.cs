@@ -6,23 +6,25 @@ using Pathfinding;
 using System.Linq;
 
 // Tutorial for the pathfinding: https://www.youtube.com/watch?v=jvtFUfJ6CP8
-public class EnemyController : MonoBehaviour
+public class EnemyController : MonoBehaviour, IGeneralCharacter
 {
     #region Public Configuration
     public bool isActive = true;
+    public int dayAllowMove = 0;
     public float health = 5f, currentHealth;
-    public float reputationThreshold = 50f;
+    public float reputationThreshold = -3f;
     public float respawnTime = 10f;
-    public float speed = 10000f;
+    public float speed = 25000f;
     public float nextWaypointDistance = 1.5f;
-    public float viewRadius = 5f;
+    public float viewRadius = 7.5f;
     public float viewAngle = 90f;
+    public float waypointDelay = 5.0f;
     public Transform enemyGFX;
     public LayerMask playerLayer;
     public LayerMask obstacleLayer;
     // Combat settings
-    [SerializeField] private float attackCooldown = 1.0f; // Cooldown between attacks
-    [SerializeField] private float attackRange = 2.5f;    // Distance needed to attack
+    [SerializeField] private float attackCooldown = 2.0f; // Cooldown between attacks
+    [SerializeField] private float attackRange = 1.5f;    // Distance needed to attack
     private bool canAttack = true;
 
     // Graphics
@@ -31,6 +33,7 @@ public class EnemyController : MonoBehaviour
 
     #region Private Fields
     private Transform player;
+    private PlayerController playerController;
     private List<Vector3> waypointsRoute = new List<Vector3>();
     private int indexRoute = 0;
     private Vector3 currentTarget;
@@ -38,6 +41,11 @@ public class EnemyController : MonoBehaviour
     private enum EnemyState { Moving, Waiting, Chasing }
     private EnemyState currentState = EnemyState.Moving;
     private Coroutine waitNewWaypoint;
+    private Coroutine attackCoroutineRef;
+    private bool attackCoroutineRunning = false;
+
+    private Coroutine flashCoroutineRef;
+    private bool flashCoroutineRunning = false;
 
     private bool isAttacking = false;
     private bool isKnockedOut = false;
@@ -50,6 +58,8 @@ public class EnemyController : MonoBehaviour
     private Seeker seeker;
     private Rigidbody2D rb;
     private GameObject enemySprites;
+    private DayTimer dayTimer;
+    private GameManager gameManager;
     #endregion
 
     #region Unity Callbacks
@@ -61,11 +71,14 @@ public class EnemyController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         enemySprites = transform.Find("EnemyGFX")?.gameObject;
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        playerController = player?.GetComponent<PlayerController>();
         enemyArm = enemySprites.transform.Find("Enemy_Arm").gameObject;
         enemyArm.SetActive(false); // Make sure it's deactivated at start
         currentHealth = health;
         playerLayer = LayerMask.GetMask("Player");
         obstacleLayer = LayerMask.GetMask("Obstacle");
+        dayTimer = GameObject.Find("GameManager").GetComponent<DayTimer>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         // Load route waypoints
         LoadWaypoints();
@@ -82,24 +95,31 @@ public class EnemyController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isActive || isKnockedOut || waypointsRoute.Count == 0) return;
-
-        switch (currentState)
+        if (!dayTimer.dayOver && !gameManager.gameOver)
         {
-            case EnemyState.Moving:
-                DetectPlayer();
-                if (path != null) MoveAlongPath();
-                break;
+            if (!isActive || isKnockedOut || waypointsRoute.Count == 0) return;
 
-            case EnemyState.Waiting:
-                DetectPlayer();
-                break;
+            switch (currentState)
+            {
+                case EnemyState.Moving:
+                    DetectPlayer();
+                    if (path != null) MoveAlongPath();
+                    break;
 
-            case EnemyState.Chasing:
-                CheckChaseConditions();
-                if (path != null) MoveAlongPath();
-                TryAttackPlayer();
-                break;
+                case EnemyState.Waiting:
+                    DetectPlayer();
+                    break;
+
+                case EnemyState.Chasing:
+                    CheckChaseConditions();
+                    if (path != null) MoveAlongPath();
+                    TryAttackPlayer();
+                    break;
+            }
+        }
+        else if (dayTimer.dayOver)
+        {
+            ResetNPC();
         }
     }
     #endregion
@@ -159,7 +179,7 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator WaypointReachDelay()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(waypointDelay);
 
         indexRoute = (indexRoute + 1) % waypointsRoute.Count;
         currentTarget = waypointsRoute[indexRoute];
@@ -200,10 +220,9 @@ public class EnemyController : MonoBehaviour
 
                 if (!Physics2D.Raycast(transform.position, dirToTarget, dstToTarget, obstacleLayer))
                 {
-                    PlayerController playerController = target.GetComponent<PlayerController>();
                     float playerReputation = playerController.reputation + playerController.aditionalReputation;
 
-                    if (playerReputation < reputationThreshold)
+                    if (playerReputation > reputationThreshold)
                     {
                         isChasing = true;
                         currentState = EnemyState.Chasing;
@@ -227,7 +246,6 @@ public class EnemyController : MonoBehaviour
     {
         if (player == null) return;
 
-        PlayerController playerController = player.GetComponent<PlayerController>();
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
         if (distanceToPlayer > viewRadius * 2 || playerController.inSpawn || playerController.isInvisible)
@@ -252,12 +270,13 @@ public class EnemyController : MonoBehaviour
 
         if (distanceToPlayer <= attackRange)
         {
-            StartCoroutine(AttackCoroutine());
+            attackCoroutineRef = StartCoroutine(AttackCoroutine());
         }
     }
 
     IEnumerator AttackCoroutine()
     {
+        attackCoroutineRunning = true;
         canAttack = false;
         isAttacking = true;
 
@@ -274,6 +293,7 @@ public class EnemyController : MonoBehaviour
 
         canAttack = true;
         isAttacking = false;
+        attackCoroutineRunning = false;
     }
 
 
@@ -293,6 +313,7 @@ public class EnemyController : MonoBehaviour
 
         if (currentHealth <= 0f && !isKnockedOut)
         {
+            gameManager.badActions++;
             isKnockedOut = true;
             isActive = false;
             Invoke(nameof(RecoverFromKnockout), respawnTime);
@@ -365,11 +386,12 @@ public class EnemyController : MonoBehaviour
 
     public void FlashOnDamage()
     {
-        StartCoroutine(FlashCoroutine());
+        flashCoroutineRef = StartCoroutine(FlashCoroutine());
     }
 
     private IEnumerator FlashCoroutine()
     {
+        flashCoroutineRunning = true;
         SpriteRenderer[] sprites = GetComponentsInChildren<SpriteRenderer>();
 
         for (int i = 0; i < 3; i++)
@@ -382,6 +404,69 @@ public class EnemyController : MonoBehaviour
                 sprite.enabled = true;
             yield return new WaitForSeconds(0.1f);
         }
+
+        flashCoroutineRunning = false;
     }
+    #endregion
+
+    #region IGeneralCharacter functions
+    public void StopNPC(bool stop)
+    {
+        // We stop the NPC
+        isActive = !stop;
+
+        if(stop)
+        {
+            rb.velocity = Vector2.zero;
+        }
+    }
+
+    public void ResetNPC()
+    {
+        // First stop the coroutines
+        if (waitNewWaypoint != null)
+        {
+            StopCoroutine(waitNewWaypoint);
+            waitNewWaypoint = null;
+        }
+        
+        if (attackCoroutineRunning)
+        {
+            StopCoroutine(attackCoroutineRef);
+            attackCoroutineRunning = false;
+        }
+
+        if (flashCoroutineRunning)
+        {
+            StopCoroutine(flashCoroutineRef);
+            flashCoroutineRunning = false;
+        }
+
+        // Reset health
+        currentHealth = health;
+
+        // Reset position
+        transform.position = spawnPoint;
+        rb.velocity = Vector2.zero;
+
+        // Reset state
+        isKnockedOut = false;
+        isAttacking = false;
+        canAttack = true;
+        isChasing = false;
+        currentState = EnemyState.Moving;
+        indexRoute = 0;
+
+        // Reset target to first waypoint
+        if (waypointsRoute.Count > 0)
+        {
+            currentTarget = waypointsRoute[indexRoute];
+            UpdatePath();
+        }
+
+        // Reactivate the enemy
+        isActive = true;
+    }
+    
     #endregion
 }
