@@ -45,7 +45,7 @@ public class CatScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if ((Vector2.Distance(player.transform.position, transform.position) < 10) && catActive)
+        if ((Vector2.Distance(player.transform.position, transform.position) < 10) && !catActive)
         {
             if (!exclamationMark.activeInHierarchy)
             {

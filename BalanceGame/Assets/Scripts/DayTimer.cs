@@ -15,7 +15,7 @@ public class DayTimer : MonoBehaviour
     public void StartTimer()
     {
         // Inicialization of the variables
-        timePerDay = 40;
+        timePerDay = 90;
         timeLeft = timePerDay;
         dayOver = false;
 

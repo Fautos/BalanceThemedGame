@@ -95,7 +95,7 @@ public class EnemyController : MonoBehaviour, IGeneralCharacter
 
     private void FixedUpdate()
     {
-        if (!dayTimer.dayOver && !gameManager.gameOver)
+        if (!dayTimer.dayOver && !gameManager.gameOver && gameManager.day >= dayAllowMove)
         {
             if (!isActive || isKnockedOut || waypointsRoute.Count == 0) return;
 

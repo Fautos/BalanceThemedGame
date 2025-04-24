@@ -148,10 +148,10 @@ MonoBehaviour:
     m_Bits: 0
   reactionDelay: 0.5
   maxChaseDistance: 15
-  walkSpeed: 12000
-  chaseSpeed: 30000
+  walkSpeed: 20000
+  chaseSpeed: 42500
   nextWaypointDistance: 1.5
-  policeThresholdMin: -5
+  policeThresholdMin: -3
   policeThresholdMax: 5
 --- !u!1 &5377879999468738254
 GameObject:

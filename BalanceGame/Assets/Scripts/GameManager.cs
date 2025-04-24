@@ -1,21 +1,22 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using TMPro;
-using System.Data.Common;
 
+// For SceneManager.LoadScene
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public int goodActions, badActions;
-    [SerializeField] public bool gameOver = false;
-    [SerializeField] int day, maxDays, dayStage, taskPerDay;
+    public int day, goodActions, badActions;
+    [SerializeField] public bool gameOver = false, debugMode;
+    [SerializeField] int maxDays, dayStage, taskPerDay;
     [SerializeField] DayTimer dayTimer;
     [SerializeField] PlayerController playerController;
     [SerializeField] MiniTaskController taskController;
-    [SerializeField] GameObject DayOverScreen, spawnIndicator, catPrefab;
+    [SerializeField] GameObject DayOverScreen, GameOverScreen, spawnIndicator, catPrefab;
     [SerializeField] DayOverScreenManager dayOverScreenManager;
+    [SerializeField] GameOverScreenManager gameOverScreenManager;
     [SerializeField] TMP_Text dayCounterText;
 
     private void Start()
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
         catPrefab = Resources.Load<GameObject>("Prefabs/Cat");
 
         // Initialize some variables
+        debugMode = false;
         day = 1;
         maxDays = 5;
         dayStage = 0;
@@ -37,6 +39,9 @@ public class GameManager : MonoBehaviour
         // Make sure the game over and day over screens are off
         dayOverScreenManager = new DayOverScreenManager(DayOverScreen);
 
+        // And the game over screen
+        gameOverScreenManager = new GameOverScreenManager(GameOverScreen);
+
     }
 
     private void FixedUpdate()
@@ -44,7 +49,7 @@ public class GameManager : MonoBehaviour
         Gameloop();
 
         // Borrar: Prueba para parar timer
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        if (Input.GetKeyUp(KeyCode.LeftShift) && debugMode)
         {
             dayTimer.FinishDay();
         }
@@ -127,7 +132,16 @@ public class GameManager : MonoBehaviour
             spawnIndicator.SetActive(false);
         } 
 
-        // Select random duties
+        // Select random duties. The first two days only 2 task are avaliable
+        if(day <= 2)
+        {
+            taskPerDay = 2;
+        }
+        else
+        {
+            taskPerDay = 3;
+        }
+
         taskController.GenerateTasks(taskPerDay);
 
         // Move to spawn and recover health
@@ -135,7 +149,7 @@ public class GameManager : MonoBehaviour
 
         if (playerController.HP < playerController.maxHP)
         {
-            playerController.HP = playerController.maxHP;
+            playerController.HP+=2;
             playerController.UpdateUI();
         }
 
@@ -202,7 +216,6 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {   
-        string gameOverText = "";
         // If the agem is over we launch the game over screen with the results
         Debug.Log("GameOver");
         gameOver = true;
@@ -212,32 +225,30 @@ public class GameManager : MonoBehaviour
         playerController.HidePlayer(true);
 
         // The end game text
-        if (playerController.HP <= 0)
+        gameOverScreenManager.ActivateScreen(playerController.HP, playerController.reputation);
+
+        if(Input.GetKeyDown(KeyCode.Return))
         {
-            gameOverText = "Player died";
+            LoadScene(1);
         }
-        else
-        {
-            if (playerController.reputation < -5)
-            {
-                gameOverText = "Player will die in prison, but he is the king of prison";
-            }
-            else if (playerController.reputation >= -5 && playerController.reputation < 5)
-            {
-                gameOverText = "Player will die in prison";
-            }
-            else if (playerController.reputation > 5)
-            {
-                gameOverText = "Player will die in prison";
-            }
-        }
-        Debug.Log(gameOverText);
-        
     }
 
     void CatSpawn()
     {
-        if(Random.Range(0, 2) > 0)
+        int probability = 2;
+
+        if(day <= 2)
+        {
+            // If we are in day 1 or 2 there is a 50% probability of spawning a cat
+            probability = 2;
+        }
+        else
+        {
+            // Else there is a 66%
+            probability = 3;
+        }
+
+        if(Random.Range(0, probability) > 0)
         {
             Instantiate(catPrefab, transform.position, Quaternion.identity);
         }
@@ -252,6 +263,21 @@ public class GameManager : MonoBehaviour
     {
         goodActions = 0;
         badActions = 0;
+    }
+
+    public void LoadScene(int sceneId)
+    {
+        StartCoroutine(LoadSceneAsync(sceneId));
+    }
+
+    IEnumerator LoadSceneAsync(int sceneId)
+    {
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneId);
+
+        while (!operation.isDone)
+        {
+            yield return null;
+        }
     }
 
 }
